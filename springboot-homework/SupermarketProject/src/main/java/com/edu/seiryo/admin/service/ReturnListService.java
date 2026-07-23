@@ -1,0 +1,27 @@
+package com.edu.seiryo.admin.service;
+
+import com.edu.seiryo.admin.pojo.ReturnList;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.edu.seiryo.admin.pojo.ReturnListGoods;
+import com.edu.seiryo.admin.query.ReturnListQuery;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 退货单表 服务类
+ * </p>
+ *
+ * @author 老李
+ */
+public interface ReturnListService extends IService<ReturnList> {
+
+    String getNextReturnNumber();
+
+    void saveReturnList(ReturnList returnList, List<ReturnListGoods> rlgList);
+
+    Map<String, Object> returnList(ReturnListQuery returnListQuery);
+
+    void deleteReturnList(Integer id);
+}
