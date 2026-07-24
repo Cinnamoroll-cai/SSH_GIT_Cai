@@ -40,6 +40,11 @@
 		<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>
 	</script>
 </form>
+<!--
+	supplier.js 会初始化这个表格，自动向后台请求数据。
+	它请求的接口是：/supplier/list
+	请求参数：page（当前页）、limit（每页条数）、supplierName（搜索条件）
+-->
 <script type="text/javascript" src="${ctx.contextPath}/js/supplier/supplier.js"></script>
 
 </body>

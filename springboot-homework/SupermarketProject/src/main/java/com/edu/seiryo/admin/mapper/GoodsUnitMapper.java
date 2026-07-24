@@ -6,4 +6,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.edu.seiryo.admin.pojo.GoodsUnit;
 @Mapper
 public interface GoodsUnitMapper extends BaseMapper<GoodsUnit> {
+	// BaseMapper 已提供基本方法
 }

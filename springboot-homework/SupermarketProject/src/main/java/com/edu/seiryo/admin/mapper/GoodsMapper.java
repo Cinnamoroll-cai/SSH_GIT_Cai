@@ -8,7 +8,18 @@ import com.edu.seiryo.admin.query.GoodsQuery;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
+/**
+ * 商品 Mapper 接口
+ * 继承 BaseMapper 自动拥有增删改查方法
+ */
 @Mapper
+@Repository
 public interface GoodsMapper extends BaseMapper<Goods> {
-
+	// 目前不需要额外方法，BaseMapper 已提供：
+    // - selectPage() 分页查询
+    // - insert() 插入
+    // - updateById() 更新
+    // - deleteById() 删除
+    // - selectList() 查询列表
 }

@@ -23,5 +23,17 @@ import java.util.Map;
 @Controller
 @RequestMapping("/goods")
 public class GoodsController {
-
+	@Resource
+    private GoodsService goodsService;
+	
+	 /**
+     * 商品列表数据接口（分页查询）
+     * 商品选择goods.gtl弹窗中请求 /goods/list
+     * 请求参数：page, limit, typeId, goodsName
+     */
+    @RequestMapping("list")
+    @ResponseBody
+    public Map<String, Object> list(GoodsQuery goodsQuery) {
+        return goodsService.goodslist(goodsQuery);
+    }
 }

@@ -13,5 +13,10 @@ import java.util.Map;
  * @date 2022/1/19 13:56
  */
 public interface GoodsTypeService extends IService<GoodsType> {
-
+	/**
+     * 查询所有商品分类（树形结构）
+     * 前端商品选择弹窗goods.ftl左侧分类树
+     * 返回格式：[{id:1, name:"分类名", children:[...]}]
+     */
+	List<Map<String, Object>> queryAllGoodsType();
 }

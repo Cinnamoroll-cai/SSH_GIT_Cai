@@ -61,9 +61,8 @@ public class User implements Serializable, UserDetails {
         return this.authorities;
     }
 
-    @Override
-    public String getUsername() {
-        return userName;
+    public String getUserName() {
+        return this.userName;
     }
 
     @Override
@@ -90,5 +89,11 @@ public class User implements Serializable, UserDetails {
 	public String getPassword() {
 		// TODO Auto-generated method stub
 		return this.password;
+	}
+
+	@Override
+	public String getUsername() {
+		// TODO Auto-generated method stub
+		return this.userName;  // 返回 userName 字段
 	}
 }

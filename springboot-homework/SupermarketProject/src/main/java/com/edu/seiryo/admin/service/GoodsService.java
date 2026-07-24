@@ -13,5 +13,11 @@ import java.util.Map;
  * @date 2022/1/19 13:55
  */
 public interface GoodsService extends IService<Goods> {
-
+	 /**
+     * 分页查询商品列表
+     * 前端商品选择弹窗goods.ftl中请求 /goods/list
+     * @param query 查询条件（page, limit, typeId, goodsName）
+     * @return layui 表格格式
+     */
+	Map<String, Object> goodslist(GoodsQuery query);
 }

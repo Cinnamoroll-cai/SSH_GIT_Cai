@@ -10,5 +10,10 @@ import java.util.List;
  * @date 2022/1/19 13:57
  */
 public interface GoodsUnitService extends IService<GoodsUnit> {
-
+	 /**
+     * 查询所有商品单位
+     * 前端添加/编辑商品时下拉选择单位
+     * 请求路径：/goodsUnit/list
+     */
+    List<GoodsUnit> findAll();
 }

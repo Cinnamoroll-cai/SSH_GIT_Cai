@@ -88,7 +88,7 @@
             <label class="layui-form-label">数量</label>
             <div class="layui-input-block">
                 <input type="number" class="layui-input inventoryQuantity"
-                       name="num" id="num" value="${(goods.num)!"0"}"required="required"min="0" max="100">
+                       name="num" id="num" value="${num!}" required="required"min="0" max="100">
             </div>
         </div>
     </div>

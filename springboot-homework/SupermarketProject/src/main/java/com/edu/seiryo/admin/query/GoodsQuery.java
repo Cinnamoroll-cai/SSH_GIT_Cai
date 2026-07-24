@@ -6,8 +6,8 @@ import java.util.List;
 
 @Data
 public class GoodsQuery extends BaseQuery{
-    private String goodsName;
-    private Integer typeId;
+    private String goodsName;// 商品名称（模糊查询）
+    private Integer typeId;// 商品分类ID
 
     private List<Integer> typeIds;
 

@@ -18,6 +18,19 @@ import java.util.List;
 @Controller
 @RequestMapping("/goodsUnit")
 public class GoodsUnitController {
+	@Resource
+    private GoodsUnitService goodsUnitService;
 
+	 /**
+     * 查询所有商品单位
+     * 前端添加/编辑商品goods_add_update.ftl时下拉选择单位
+     * 请求路径：/goodsUnit/list
+     * 返回格式：JSON 数组
+     */
+    @RequestMapping("list")
+    @ResponseBody
+    public List<GoodsUnit> list() {
+        return goodsUnitService.findAll();
+    }
 
 }

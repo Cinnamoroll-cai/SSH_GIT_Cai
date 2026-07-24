@@ -11,5 +11,11 @@ import java.util.List;
 
 @Service
 public class GoodsUnitServiceImpl extends ServiceImpl<GoodsUnitMapper, GoodsUnit> implements GoodsUnitService {
+
+	@Override
+	public List<GoodsUnit> findAll() {
+		// TODO Auto-generated method stub
+		return this.list();
+	}
 }
 

@@ -8,7 +8,11 @@ import com.edu.seiryo.admin.pojo.Goods;
 import com.edu.seiryo.admin.pojo.PurchaseList;
 import com.edu.seiryo.admin.mapper.PurchaseListGoodsMapper;
 import com.edu.seiryo.admin.mapper.PurchaseListMapper;
+import com.edu.seiryo.admin.mapper.SupplierMapper;
+import com.edu.seiryo.admin.mapper.UserMapper;
 import com.edu.seiryo.admin.pojo.PurchaseListGoods;
+import com.edu.seiryo.admin.pojo.Supplier;
+import com.edu.seiryo.admin.pojo.User;
 import com.edu.seiryo.admin.query.PurchaseListQuery;
 import com.edu.seiryo.admin.service.GoodsService;
 
@@ -50,6 +54,12 @@ public class PurchaseListServiceImpl extends ServiceImpl<PurchaseListMapper, Pur
     @Resource
     private PurchaseListGoodsMapper purchaseListGoodsMapper;
     
+    @Resource
+    private SupplierMapper supplierMapper;
+
+    @Resource
+    private UserMapper userMapper;
+    
     /**
      * 	生成进货单号
      * 	前端加载时，/purchase/index 调用此方法，将单号放入 model，前端显示在“单号”处
@@ -78,6 +88,16 @@ public class PurchaseListServiceImpl extends ServiceImpl<PurchaseListMapper, Pur
     @Override
     @Transactional(rollbackFor = Exception.class)
 	public void savePurchaseList(PurchaseList purchaseList, List<PurchaseListGoods> goodsList) {
+    	// 如果 purchaseNumber 为空，生成一个新的单号
+        if (StringUtil.isEmpty(purchaseList.getPurchaseNumber())) {
+            purchaseList.setPurchaseNumber(getNextPurchaseNumber());
+        }
+        
+        // 设置默认值
+        if (purchaseList.getState() == null) {
+            purchaseList.setState(1);
+        }
+    	
     	// 1. 保存主表
         // 设置默认值：如果不设置，前端可能传空
         if (purchaseList.getState() == null) {
@@ -91,7 +111,7 @@ public class PurchaseListServiceImpl extends ServiceImpl<PurchaseListMapper, Pur
         // 每一条明细都要关联主表的 id
         for (PurchaseListGoods goods : goodsList) {
             goods.setPurchaseListId(purchaseList.getId()); // 关联主表ID
-            // 计算总价（如果前端没有传，可以自己算）
+            // 计算总价
             if (goods.getTotal() == null) {
                 goods.setTotal(goods.getPrice() * goods.getNum());
             }
@@ -109,9 +129,9 @@ public class PurchaseListServiceImpl extends ServiceImpl<PurchaseListMapper, Pur
      */
 	@Override
 	public Map<String, Object> purchaseList(PurchaseListQuery query) {
-		// 开启分页（PageHelper 自动拦截后续的 SQL）
-        PageHelper.startPage(query.getPage(), query.getLimit());
-        // 构建查询条件
+		// 1. 构建 MyBatis-Plus 分页对象
+		Page<PurchaseList> page = new Page<>(query.getPage(), query.getLimit());
+		 // 2. 构建查询条件
         QueryWrapper<PurchaseList> wrapper = new QueryWrapper<>();
         if (!StringUtil.isEmpty(query.getPurchaseNumber())) {
             wrapper.like("purchase_number", query.getPurchaseNumber());
@@ -122,20 +142,44 @@ public class PurchaseListServiceImpl extends ServiceImpl<PurchaseListMapper, Pur
         if (query.getState() != null) {
             wrapper.eq("state", query.getState());
         }
-        // 日期范围查询（假设 query 中有 startDate 和 endDate）
-        // ... 可按需扩展
+        // 日期范围查询
+        if (!StringUtil.isEmpty(query.getStartDate())) {
+            wrapper.ge("purchase_date", query.getStartDate());
+        }
+        if (!StringUtil.isEmpty(query.getEndDate())) {
+            wrapper.le("purchase_date", query.getEndDate());
+        }
         wrapper.orderByDesc("id"); // 按主键降序
 
-        // 执行查询，返回 PageInfo 对象
-        List<PurchaseList> list = purchaseListMapper.selectList(wrapper);
-        PageInfo<PurchaseList> pageInfo = new PageInfo<>(list);
-
+        // 3. 执行分页查询
+        IPage<PurchaseList> iPage = this.baseMapper.selectPage(page, wrapper);
+        
+        // 4. 填充 supplierName 和 userName
+        List<PurchaseList> resultList = iPage.getRecords();
+        
+        for (PurchaseList pl : resultList) {
+            // 查询供应商名称
+            if (pl.getSupplierId() != null && pl.getSupplierId() > 0) {
+                Supplier supplier = supplierMapper.selectById(pl.getSupplierId()); // 需要注入 SupplierMapper
+                if (supplier != null) {
+                    pl.setSupplierName(supplier.getName());
+                }
+            }
+            // 查询操作员名称
+            if (pl.getUserId() != null && pl.getUserId() > 0) {
+                User user = userMapper.selectById(pl.getUserId()); // 需要注入 UserMapper
+                if (user != null) {
+                	pl.setUserName(user.getUserName());
+                }
+            }
+        }
+        
         // 构造返回结果（layui 表格要求的数据格式）
         Map<String, Object> result = new HashMap<>();
         result.put("code", 0);
         result.put("msg", "");
-        result.put("count", pageInfo.getTotal()); // 总记录数
-        result.put("data", pageInfo.getList());    // 当前页数据
+        result.put("count", iPage.getTotal());
+        result.put("data", resultList);
         return result;
 	}
 	

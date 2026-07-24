@@ -34,18 +34,31 @@ public class PurchaseListGoodsServiceImpl extends ServiceImpl<PurchaseListGoodsM
      */
     @Override
     public Map<String, Object> purchaseListGoodsList(PurchaseListGoodsQuery query) {
-        PageHelper.startPage(query.getPage(), query.getLimit());
+    	// 1. 构建 MyBatis-Plus 分页对象
+        Page<PurchaseListGoods> page = new Page<>(query.getPage(), query.getLimit());
+        
+        // 2. 构建查询条件
         QueryWrapper<PurchaseListGoods> wrapper = new QueryWrapper<>();
         if (query.getPurchaseListId() != null) {
             wrapper.eq("purchase_list_id", query.getPurchaseListId());
         }
-        List<PurchaseListGoods> list = this.baseMapper.selectList(wrapper);
-        PageInfo<PurchaseListGoods> pageInfo = new PageInfo<>(list);
+        // 按主键降序（可选）
+        wrapper.orderByDesc("id");
+        
+        // 3. 执行分页查询
+        /*
+         * 调用的 this.baseMapper.selectList(wrapper)，
+         * 实际上就是调用了 BaseMapper 自带的 selectList 方法，
+         * 不需要自己写 XML 或 Mapper 接口中的方法
+         */
+        IPage<PurchaseListGoods> iPage = this.baseMapper.selectPage(page, wrapper);
+        
+        // 4. 构造返回结果
         Map<String, Object> result = new HashMap<>();
         result.put("code", 0);
         result.put("msg", "");
-        result.put("count", pageInfo.getTotal());
-        result.put("data", pageInfo.getList());
+        result.put("count", iPage.getTotal());
+        result.put("data", iPage.getRecords());
         return result;
     }
 }
