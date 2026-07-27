@@ -14,9 +14,19 @@ import java.util.Map;
  */
 public interface GoodsTypeService extends IService<GoodsType> {
 	/**
-     * 查询所有商品分类（树形结构）
-     * 前端商品选择弹窗goods.ftl左侧分类树
-     * 返回格式：[{id:1, name:"分类名", children:[...]}]
+     * 	查询所有商品分类（树形结构）
+     * 	前端商品选择弹窗goods.ftl左侧分类树
+     * 	返回格式：[{id:1, name:"分类名", children:[...]}]
      */
 	List<Map<String, Object>> queryAllGoodsType();
+	
+	/**
+     * 	保存商品分类
+     */
+    void saveGoodsType(GoodsType goodsType);
+
+    /**
+     * 	删除商品分类（检查是否有子节点）
+     */
+    void deleteGoodsType(Integer id);
 }

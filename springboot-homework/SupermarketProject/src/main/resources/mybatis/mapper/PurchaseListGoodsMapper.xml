@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.edu.seiryo.admin.mapper.PurchaseListGoodsMapper">
-
+ 	 <!-- 商品采购统计查询（不带 type 字段） -->
+    <select id="countPurchase" resultType="java.util.HashMap">
+	    SELECT
+	        pl.purchase_number AS purchaseNumber,
+	        TO_CHAR(pl.purchase_date, 'YYYY-MM-DD') AS purchaseDate,
+	        s.name AS supplierName,
+	        plg.code AS goodsCode,
+	        plg.name AS goodsName,
+	        plg.model AS goodsModel,
+	        gt.name AS typeName,
+	        plg.price AS goodsPrice,
+	        plg.num AS goodsNum,
+	        plg.unit AS unitName,
+	        plg.total AS totalPrice
+	    FROM t_purchase_list_goods plg
+	    LEFT JOIN t_purchase_list pl ON plg.purchase_list_id = pl.id
+	    LEFT JOIN t_supplier s ON pl.supplier_id = s.id
+	    LEFT JOIN t_goods_type gt ON plg.type_id = gt.id
+	    WHERE 1=1
+	    <if test="goodsName != null and goodsName != ''">
+	        AND plg.name LIKE '%' || #{goodsName} || '%'
+	    </if>
+	    <if test="typeId != null and typeId > 0">
+	        AND plg.type_id = #{typeId}
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        AND TRUNC(pl.purchase_date) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        AND TRUNC(pl.purchase_date) &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+	    </if>
+	    ORDER BY pl.purchase_date DESC, plg.id DESC
+	</select>
 </mapper>

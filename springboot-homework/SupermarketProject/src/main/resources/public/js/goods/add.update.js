@@ -36,15 +36,11 @@ layui.use(['form', 'layer'], function () {
         url:ctx+"/goodsUnit/allGoodsUnits",
         success:function (data){
             if (data!== null) {
-                $.each(data, function(index, item) {
-                    //alert($("input[name='goodsUnit']").val()==item.id));
-                    if($("input[name='goodsUnit']").val()==item.id){
-                        $("#unit").append("<option value='"+item.id+"' selected='selected'>"+item.name+"</option>");
-                    }else{
-                        $("#unit").append("<option value='"+item.id+"' >"+item.name+"</option>");
-                    }
-
-                });
+            	var selectedUnit = $("input[name='goodsUnit']").val(); // 单位名称
+            	 $.each(data, function(index, item) {
+                     var selected = (selectedUnit == item.name) ? "selected='selected'" : "";
+                     $("#unit").append("<option value='"+item.name+"' "+selected+">"+item.name+"</option>");
+                 });
             }
             //重新渲染
             form.render("select")
@@ -76,6 +72,31 @@ layui.use(['form', 'layer'], function () {
                             icon: 5
                         }
                     );
+            }
+        });
+        return false;
+    });
+    
+    // 保存并新增下一商品
+    form.on("submit(next)", function (data) {
+        var index = top.layer.msg('数据提交中，请稍候', {icon: 16, time: false, shade: 0.8});
+        // 始终是新增，用 /goods/save
+        $.post(ctx + "/goods/save", data.field, function (res) {
+            if (res.code == 200) {
+                top.layer.close(index);
+                top.layer.msg("操作成功，继续新增！");
+                // 刷新父页面列表
+                parent.location.reload();
+                // 获取当前选中的分类ID，以便刷新后继续使用
+                var typeId = $("input[name='typeId']").val();
+                // 刷新当前 iframe，重置表单，继续新增
+                var url = ctx + "/goods/addOrUpdateGoodsPage";
+                if (typeId && typeId != 0) {
+                    url += "?typeId=" + typeId;
+                }
+                window.location.href = url;
+            } else {
+                layer.msg(res.message, {icon: 5});
             }
         });
         return false;

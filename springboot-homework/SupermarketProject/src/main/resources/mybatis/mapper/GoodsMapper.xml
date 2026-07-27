@@ -1,5 +1,63 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.edu.seiryo.admin.mapper.GoodsMapper">
+
+    <!-- 通用结果映射（包含非表字段） -->
+    <resultMap id="StockResultMap" type="com.edu.seiryo.admin.pojo.Goods">
+        <!-- 表字段 -->
+        <id column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="model" property="model"/>
+        <result column="producer" property="producer"/>
+        <result column="inventory_quantity" property="inventoryQuantity"/>
+        <result column="purchasing_price" property="purchasingPrice"/>
+        <result column="selling_price" property="sellingPrice"/>
+        <result column="unit" property="unit"/>
+        <result column="type_id" property="typeId"/>
+        <result column="state" property="state"/>
+        <result column="is_del" property="isDel"/>
+        <!-- 非表字段 -->
+        <result column="typeName" property="typeName"/>
+        <result column="unitName" property="unitName"/>
+        <result column="saleTotal" property="saleTotal"/>
+    </resultMap>
+
+    <!-- 库存查询（含分类名称、单位名称、销售总数） -->
+    <select id="stockList" resultMap="StockResultMap">
+        SELECT 
+            g.id,
+            g.code,
+            g.name,
+            g.model,
+            g.producer,
+            g.inventory_quantity,
+            g.purchasing_price,
+            g.selling_price,
+            g.unit,
+            g.type_id,
+            g.state,
+            g.is_del,
+            gt.name AS typeName,
+            gu.name AS unitName,
+            NVL((
+                SELECT SUM(slg.num) 
+                FROM t_sale_list_goods slg 
+                WHERE slg.goods_id = g.id
+            ), 0) AS saleTotal
+        FROM t_goods g
+        LEFT JOIN t_goods_type gt ON g.type_id = gt.id
+        LEFT JOIN t_goods_unit gu ON g.unit = gu.name
+        WHERE g.is_del = 0
+        <if test="goodsName != null and goodsName != ''">
+            AND g.name LIKE '%' || #{goodsName} || '%'
+        </if>
+        <if test="typeId != null and typeId > 0">
+            AND g.type_id = #{typeId}
+        </if>
+        ORDER BY g.id DESC
+    </select>
 
 </mapper>

@@ -15,6 +15,7 @@ import com.github.pagehelper.PageInfo;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,5 +61,44 @@ public class PurchaseListGoodsServiceImpl extends ServiceImpl<PurchaseListGoodsM
         result.put("count", iPage.getTotal());
         result.put("data", iPage.getRecords());
         return result;
+    }
+    
+    /**
+     * 	商品采购统计
+     */
+	@Override
+	public Map<String, Object> countPurchase(PurchaseListGoodsQuery query) {
+		// TODO Auto-generated method stub
+		// 1. 构建分页对象
+	    Page<Map<String, Object>> page = new Page<>(query.getPage(), query.getLimit());
+
+	    // 2. 执行统计查询
+	    IPage<Map<String, Object>> resultPage = this.baseMapper.countPurchase(
+	            page,
+	            query.getGoodsName(),
+	            query.getTypeId(),
+	            query.getStartDate(),
+	            query.getEndDate()
+	    );
+	    
+	    // ===== 将字段名转为小写 =====
+	    List<Map<String, Object>> lowerData = new ArrayList<>();
+	    for (Map<String, Object> record : resultPage.getRecords()) {
+	        Map<String, Object> lowerRecord = new HashMap<>();
+	        for (Map.Entry<String, Object> entry : record.entrySet()) {
+	            // key全部转小写
+	            lowerRecord.put(entry.getKey().toLowerCase(), entry.getValue());
+	        }
+	        lowerRecord.put("type", "进货");
+	        lowerData.add(lowerRecord);
+	    }
+
+	    // 4. 构造返回结果【data放转换后的lowerData】
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("code", 0);
+	    result.put("msg", "");
+	    result.put("count", resultPage.getTotal());
+	    result.put("data", lowerData); // 这里改成lowerData！！
+	    return result;
     }
 }

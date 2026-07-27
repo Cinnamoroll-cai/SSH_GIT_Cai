@@ -24,8 +24,9 @@ public class ReportController {
     }
 
     /**
-     * 商品采购统计
-     * @return
+     * 	商品采购统计页面
+     * 	首页main.ftl点击“商品采购统计”请求data-tab="report/countPurchase"
+     * @return	"count/purchase" 返回商品采购统计报表视图
      */
     @RequestMapping("countPurchase")
     public String countPurchase(){
@@ -52,7 +53,7 @@ public class ReportController {
     }
 
     /**
-     * 月销售统计
+     * 	月销售统计
      * @return
      */
     @RequestMapping("countMonthSale")

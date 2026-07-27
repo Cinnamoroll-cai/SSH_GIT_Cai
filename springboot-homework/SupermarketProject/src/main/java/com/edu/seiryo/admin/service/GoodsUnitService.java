@@ -11,9 +11,9 @@ import java.util.List;
  */
 public interface GoodsUnitService extends IService<GoodsUnit> {
 	 /**
-     * 查询所有商品单位
-     * 前端添加/编辑商品时下拉选择单位
-     * 请求路径：/goodsUnit/list
+     * 	查询所有商品单位
+     * 	前端添加/编辑商品时下拉选择单位
+     * 	请求路径：/goodsUnit/list
      */
     List<GoodsUnit> findAll();
 }

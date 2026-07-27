@@ -35,7 +35,7 @@ public class CommonController {
     private GoodsUnitService goodsUnitService;  // 注入单位Service
 
     /**
-     * 添加商品-选择商品页
+     * 	添加商品-选择商品页
      * @return
      */
     @RequestMapping("toSelectGoodsPage")
@@ -44,7 +44,7 @@ public class CommonController {
     }
 
     /**
-     * 添加商品-商品信息添加页(单价、进货数量)
+     * 	添加商品-商品信息添加页(单价、进货数量)
      * @param gid
      * @param model
      * @return
@@ -82,7 +82,7 @@ public class CommonController {
 
 
     /**
-     * 修改商品-商品信息修改页(单价、进货数量)
+     * 	修改商品-商品信息修改页(单价、进货数量)
      * @param goodsModel
      * @param model
      * @return
@@ -129,11 +129,14 @@ public class CommonController {
     }
 
 
-
+    /**
+     * 库存列表数据接口
+     * 前端：stock.search.js 请求 /common/stockList
+     */
     @RequestMapping("stockList")
     @ResponseBody
     public Map<String,Object> stockLick(GoodsQuery goodsQuery){
-        return null;
+        return goodsService.stockList(goodsQuery);
     }
 
 

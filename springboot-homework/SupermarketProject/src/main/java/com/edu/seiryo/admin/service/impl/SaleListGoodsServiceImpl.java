@@ -14,7 +14,10 @@ import com.edu.seiryo.admin.utils.PageResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Resource;
 
 /**
  * 销售单销售表服务器
@@ -23,7 +26,9 @@ import java.util.Map;
  */
 @Service
 public class SaleListGoodsServiceImpl extends ServiceImpl<SaleListGoodsMapper, SaleListGoods> implements SaleListGoodsService {
-
+	@Resource
+    private SaleListGoodsMapper saleListGoodsMapper;
+	
     @Override
     public Integer getSaleTotalByGoodsId(Integer id) {
         SaleListGoods saleListGoods = this.getOne(new QueryWrapper<SaleListGoods>().select("sum(num) as num").eq("goods_id",id));
@@ -41,6 +46,13 @@ public class SaleListGoodsServiceImpl extends ServiceImpl<SaleListGoodsMapper, S
         page =  this.baseMapper.selectPage(page,queryWrapper);
         return PageResultUtil.setResult(page.getTotal(),page.getRecords());
     }
+
+
+	@Override
+	public List<Map<String, Object>> countSaleByMonth(String begin, String end) {
+		// TODO Auto-generated method stub
+		return saleListGoodsMapper.countSaleByMonth(begin, end);
+	}
 
 
 }

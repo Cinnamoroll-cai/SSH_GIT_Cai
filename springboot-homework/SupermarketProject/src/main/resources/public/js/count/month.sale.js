@@ -24,6 +24,16 @@ layui.use(['table','laydate','layer',"form"],function(){
         toolbar: "#toolbarDemo",
         totalRow: true,
         id : "monthSaleTable",
+        // 新增净化代码，规避HashMap字段读取异常
+        parseData:function(res){
+            var cleanData = JSON.parse(JSON.stringify(res.data));
+            return {
+                code:res.code,
+                msg:res.msg,
+                count:res.count,
+                data:cleanData
+            }
+        },
         cols : [[
             {field: "date", title:'销售日期',align:'center',totalRowText: '合计（￥）'},
             {field: 'amountCost', title: '成本金额(￥)', minWidth:80, align:"center",totalRow: true},

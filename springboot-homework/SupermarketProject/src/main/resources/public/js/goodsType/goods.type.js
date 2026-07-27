@@ -11,6 +11,12 @@ layui.use(['table', 'treetable'], function () {
         treePidName: 'pId',
         elem: '#goods-type-table',
         url: ctx+'/goodsType/list',
+        response: {
+            statusCode: 0,
+            statusName: 'code',
+            msgName: 'msg',
+            dataName: 'data'
+        },
         toolbar: "#toolbarDemo",
         treeDefaultClose:true,
         page: true,

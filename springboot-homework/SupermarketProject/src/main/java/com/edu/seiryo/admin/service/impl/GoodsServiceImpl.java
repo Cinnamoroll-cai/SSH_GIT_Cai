@@ -47,6 +47,9 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
 
     @Resource
     private GoodsUnitMapper goodsUnitMapper;  // 注入单位Mapper
+    
+    @Resource
+    private GoodsMapper goodsMapper;	// 注入商品Mapper
 
 	/**
 	 * 添加进货商品页面展示商品表
@@ -104,6 +107,92 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         result.put("data", goodsList);
         return result;
     }
+	
+	/**
+	 * 库存查询
+	 */
+	@Override
+	public Map<String, Object> stockList(GoodsQuery query) {
+		// TODO Auto-generated method stub
+		// 1. 构建分页对象
+        Page<Goods> page = new Page<>(query.getPage(), query.getLimit());
+        
+        // 2. 执行自定义分页查询（Mapper 中的 stockList 方法）
+        IPage<Goods> resultPage = goodsMapper.stockList(page, query.getGoodsName(), query.getTypeId());
+        
+        // 3. 构造 layui 表格返回格式
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", 0);
+        result.put("msg", "");
+        result.put("count", resultPage.getTotal());
+        result.put("data", resultPage.getRecords());
+        return result;
+	}
+	
+	/**
+	 * 	新增商品
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void saveGoods(Goods goods) {
+		// TODO Auto-generated method stub
+		// 参数校验
+        AssertUtil.isTrue(StringUtil.isEmpty(goods.getName()), "商品名称不能为空");
+        AssertUtil.isTrue(goods.getTypeId() == null || goods.getTypeId() == 0, "请选择商品类别");
+        AssertUtil.isTrue(StringUtil.isEmpty(goods.getUnit()), "请选择商品单位");
+        AssertUtil.isTrue(goods.getPurchasingPrice() == null || goods.getPurchasingPrice() < 0, "采购价不能为负数");
+        AssertUtil.isTrue(goods.getSellingPrice() == null || goods.getSellingPrice() < 0, "销售价不能为负数");
+        AssertUtil.isTrue(goods.getMinNum() == null || goods.getMinNum() < 0, "库存下限不能为负数");
+
+        // 设置默认值
+        goods.setIsDel(0);
+        goods.setState(0);
+        goods.setInventoryQuantity(0); // 新增商品库存默认为0
+        if (goods.getLastPurchasingPrice() == null) {
+            goods.setLastPurchasingPrice(goods.getPurchasingPrice());
+        }
+
+        boolean saved = this.save(goods);
+        AssertUtil.isTrue(!saved, "商品添加失败");
+        
+        // 生成商品编码：00xx， xx 是 ID
+        String code = String.format("%04d", goods.getId()); // 自动补零到4位
+        goods.setCode(code);
+        this.updateById(goods); // 更新编码
+	}
+	
+	/**
+	 * 	更新商品
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateGoods(Goods goods) {
+		// TODO Auto-generated method stub
+		AssertUtil.isTrue(goods.getId() == null, "商品ID不能为空");
+        AssertUtil.isTrue(StringUtil.isEmpty(goods.getName()), "商品名称不能为空");
+        AssertUtil.isTrue(goods.getTypeId() == null || goods.getTypeId() == 0, "请选择商品类别");
+        AssertUtil.isTrue(StringUtil.isEmpty(goods.getUnit()), "请选择商品单位");
+
+        boolean updated = this.updateById(goods);
+        AssertUtil.isTrue(!updated, "商品更新失败");
+	}
+	
+	/**
+	 * 	删除商品
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteGoods(Integer id) {
+		// TODO Auto-generated method stub
+		 AssertUtil.isTrue(id == null, "商品ID不能为空");
+
+        // 逻辑删除：将 is_del 设为 1
+        Goods goods = new Goods();
+        goods.setId(id);
+        goods.setIsDel(1);
+        boolean deleted = this.updateById(goods);
+        AssertUtil.isTrue(!deleted, "商品删除失败");
+	}
 
 
 }

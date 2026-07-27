@@ -45,6 +45,9 @@ public class SaleListController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private SaleListGoodsService saleListGoodsService;
+
 
     /**
      * 销售出库主页
@@ -138,5 +141,24 @@ public class SaleListController {
         return result;
     }
 
-
+    /**
+     * 	月销售统计接口
+     * 	前端 month.sale.js 请求 /sale/countSaleByMonth
+     * @param begin 开始月份 yyyy-MM
+     * @param end 结束月份 yyyy-MM
+     * @return 标准 Layui 表格格式 {code:0, msg:"", data:[...]}
+     */
+    @RequestMapping("countSaleByMonth")
+    @ResponseBody
+    public Map<String, Object> countSaleByMonth(String begin, String end) {
+    	List<Map<String, Object>> list = saleListGoodsService.countSaleByMonth(begin, end);
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", 0);
+        result.put("msg", "");
+        List<Map<String, Object>> dataList = list != null ? list : new ArrayList<>();
+        result.put("data", dataList);
+        // 补上总行数
+        result.put("count", dataList.size());
+        return result;
+    }
 }

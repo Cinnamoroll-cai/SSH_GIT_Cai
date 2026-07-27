@@ -18,4 +18,9 @@ public interface PurchaseListGoodsService extends IService<PurchaseListGoods> {
      * 	@return 分页结果
      */
     Map<String, Object> purchaseListGoodsList(PurchaseListGoodsQuery query);
+    
+    /**
+     * 	商品采购统计
+     */
+    Map<String, Object> countPurchase(PurchaseListGoodsQuery query);
 }

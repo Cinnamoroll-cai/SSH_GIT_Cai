@@ -65,26 +65,50 @@ public class ReturnListServiceImpl extends ServiceImpl<ReturnListMapper, ReturnL
     @Override
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
     public void saveReturnList(ReturnList returnList, List<ReturnListGoods> rlgList) {
-        AssertUtil.isTrue(returnList.getSupplierId()==0,"供应商为空");
-        AssertUtil.isTrue(returnList.getAmountPayable()==null,"应付金额不能为空");
-        AssertUtil.isTrue(returnList.getAmountPaid()==null,"实付金额不能为空");
-        AssertUtil.isTrue(returnList.getReturnDate()==null,"请选择日期");
-        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd");
-        Date date1 = new Date(System.currentTimeMillis());
-        formatter.format(returnList.getReturnDate()).compareTo(formatter.format(date1));
-        AssertUtil.isTrue(formatter.format(returnList.getReturnDate()).compareTo(formatter.format(date1))!=0,"请选择本日时间");
-        AssertUtil.isTrue(!(this.save(returnList)),"记录添加失败!");
-        ReturnList  temp = this.getOne(new QueryWrapper<ReturnList>().eq("return_number",returnList.getReturnNumber()));
-        AssertUtil.isTrue(rlgList==null,"请选择商品");
-        rlgList.forEach(rlg->{
-            rlg.setReturnListId(temp.getId());
-            Goods goods =goodsService.getById(rlg.getGoodsId());
-            goods.setInventoryQuantity(goods.getInventoryQuantity()-rlg.getNum());
-            goods.setState(2);
-            goodsService.updateById(goods);
-
-        });
-        AssertUtil.isTrue(!(returnListGoodsService.saveBatch(rlgList)),"记录添加失败!");
+    	// 1. 参数校验
+        AssertUtil.isTrue(returnList.getSupplierId() == 0, "供应商为空");
+        AssertUtil.isTrue(returnList.getAmountPayable() == null, "应付金额不能为空");
+        AssertUtil.isTrue(returnList.getAmountPaid() == null, "实付金额不能为空");
+        AssertUtil.isTrue(returnList.getReturnDate() == null, "请选择日期");
+        
+        // 校验日期只能选今天
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        String todayStr = formatter.format(new Date());
+        String returnDateStr = formatter.format(returnList.getReturnDate());
+        AssertUtil.isTrue(!returnDateStr.equals(todayStr), "请选择本日时间");
+        
+        // 2. 保存主表（获取主键 ID）
+        boolean saved = this.save(returnList);
+        AssertUtil.isTrue(!saved, "退货单主表保存失败");
+        
+        // 3. 获取刚插入的主表记录（获取 ID）
+        ReturnList temp = this.getOne(new QueryWrapper<ReturnList>().eq("return_number", returnList.getReturnNumber()));
+        AssertUtil.isTrue(temp == null, "获取退货单记录失败");
+        Integer returnListId = temp.getId();
+        
+        // 4. 保存明细
+        AssertUtil.isTrue(rlgList == null || rlgList.isEmpty(), "请选择商品");
+        for (ReturnListGoods rlg : rlgList) {
+            // 设置关联主表 ID
+            rlg.setReturnListId(returnListId);
+            // 如果总价为 null，自动计算
+            if (rlg.getTotal() == null) {
+                rlg.setTotal(rlg.getPrice() * rlg.getNum());
+            }
+            // 保存明细
+            boolean detailSaved = returnListGoodsService.save(rlg);
+            AssertUtil.isTrue(!detailSaved, "商品明细保存失败");
+        }
+        
+        // 5. 更新库存（减少）
+        for (ReturnListGoods rlg : rlgList) {
+            Goods goods = goodsService.getById(rlg.getGoodsId());
+            if (goods != null) {
+                goods.setInventoryQuantity(goods.getInventoryQuantity() - rlg.getNum());
+                goods.setState(2);
+                goodsService.updateById(goods);
+            }
+        }
     }
 
     @Override

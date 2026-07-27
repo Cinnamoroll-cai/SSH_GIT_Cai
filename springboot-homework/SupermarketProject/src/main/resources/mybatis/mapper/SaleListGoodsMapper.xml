@@ -21,5 +21,27 @@
     <sql id="Base_Column_List">
         id, code, model, name, num, price, total, unit, sale_list_id, type_id, goods_id
     </sql>
+    
+    <!-- 月销售统计 -->
+    <select id="countSaleByMonth" resultType="java.util.HashMap">
+	    SELECT
+	        TO_CHAR(sl.sale_date, 'YYYY-MM') AS "date",
+	        SUM(slg.total) AS "amountSale",
+	        SUM(slg.num * g.purchasing_price) AS "amountCost",
+	        SUM(slg.total) - SUM(slg.num * g.purchasing_price) AS "amountProfit"
+	    FROM t_sale_list_goods slg
+	    LEFT JOIN t_sale_list sl ON slg.sale_list_id = sl.id
+	    LEFT JOIN t_goods g ON slg.goods_id = g.id
+	    WHERE sl.state = 1
+	    <if test="begin != null and begin != ''">
+	        AND TO_CHAR(sl.sale_date, 'YYYY-MM') >= #{begin}
+	    </if>
+	    <if test="end != null and end != ''">
+	        AND TO_CHAR(sl.sale_date, 'YYYY-MM') &lt;= #{end}
+	    </if>
+	    GROUP BY TO_CHAR(sl.sale_date, 'YYYY-MM')
+	    ORDER BY TO_CHAR(sl.sale_date, 'YYYY-MM') ASC
+	</select>
+
 
 </mapper>

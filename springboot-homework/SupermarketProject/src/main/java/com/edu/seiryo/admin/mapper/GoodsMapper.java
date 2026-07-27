@@ -16,10 +16,18 @@ import org.springframework.stereotype.Repository;
 @Mapper
 @Repository
 public interface GoodsMapper extends BaseMapper<Goods> {
-	// 目前不需要额外方法，BaseMapper 已提供：
+	// BaseMapper 已提供：
     // - selectPage() 分页查询
     // - insert() 插入
     // - updateById() 更新
     // - deleteById() 删除
     // - selectList() 查询列表
+	
+	 /**
+     * 库存查询（分页）
+     * 包含：商品信息 + 分类名称 + 单位名称 + 销售总数
+     */
+    IPage<Goods> stockList(Page<Goods> page, 
+                           @Param("goodsName") String goodsName, 
+                           @Param("typeId") Integer typeId);
 }

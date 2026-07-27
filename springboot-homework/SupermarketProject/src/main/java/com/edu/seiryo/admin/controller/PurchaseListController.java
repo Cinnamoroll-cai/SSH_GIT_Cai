@@ -6,7 +6,9 @@ import com.google.gson.reflect.TypeToken;
 import com.edu.seiryo.admin.model.RespBean;
 import com.edu.seiryo.admin.pojo.PurchaseList;
 import com.edu.seiryo.admin.pojo.PurchaseListGoods;
+import com.edu.seiryo.admin.query.PurchaseListGoodsQuery;
 import com.edu.seiryo.admin.query.PurchaseListQuery;
+import com.edu.seiryo.admin.service.PurchaseListGoodsService;
 import com.edu.seiryo.admin.service.PurchaseListService;
 
 import com.edu.seiryo.admin.service.UserService;
@@ -35,6 +37,9 @@ public class PurchaseListController {
 
     @Resource
     private UserService userService;
+    
+    @Resource
+    private PurchaseListGoodsService purchaseListGoodsService;  // 新增注入
     
     /**
      * 	进入进货入库页面
@@ -103,5 +108,18 @@ public class PurchaseListController {
     public RespBean delete(Integer id) {
         purchaseListService.deletePurchaseList(id);
         return RespBean.success("删除成功");
+    }
+    
+    /**
+     * 	商品采购统计接口
+     * 	前端统计报表页面count/purchase.ftl请求 /purchase/countPurchase
+     */
+    @RequestMapping("countPurchase")
+    @ResponseBody
+    public Map<String, Object> countPurchase(PurchaseListGoodsQuery query) {
+    	Map<String, Object> result = purchaseListGoodsService.countPurchase(query);
+    	System.out.println("=== countPurchase 返回结果 ===");
+        System.out.println(result);
+        return result;
     }
 }
