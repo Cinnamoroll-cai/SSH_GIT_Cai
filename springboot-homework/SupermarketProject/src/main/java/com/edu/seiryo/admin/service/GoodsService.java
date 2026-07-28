@@ -41,4 +41,9 @@ public interface GoodsService extends IService<Goods> {
      * 	逻辑删除商品
      */
     void deleteGoods(Integer id);
+    
+    /**
+     * 	库存预警
+     */
+    Map<String, Object> alarmList(GoodsQuery query);
 }

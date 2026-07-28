@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.edu.seiryo.admin.pojo.*;
 import com.edu.seiryo.admin.mapper.DamageListMapper;
+import com.edu.seiryo.admin.mapper.UserMapper;
 import com.edu.seiryo.admin.query.DamageListQuery;
 import com.edu.seiryo.admin.service.DamageListGoodsService;
 import com.edu.seiryo.admin.service.DamageListService;
@@ -21,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 报损表单类
@@ -36,6 +39,9 @@ public class DamageListServiceImpl extends ServiceImpl<DamageListMapper, DamageL
 
     @Resource
     private DamageListGoodsService damageListGoodsService;
+    
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public String getNextDamageNumber() {
@@ -77,11 +83,32 @@ public class DamageListServiceImpl extends ServiceImpl<DamageListMapper, DamageL
 
     @Override
     public Map<String, Object> damageList(DamageListQuery damageListQuery) {
-        IPage<DamageList> page = new Page<DamageList>(damageListQuery.getPage(),damageListQuery.getLimit());
-        page =  this.baseMapper.damageList(page,damageListQuery);
-        return PageResultUtil.setResult(page.getTotal(),page.getRecords());
-    }
+        Page<DamageList> page = new Page<>(damageListQuery.getPage(), damageListQuery.getLimit());
+        QueryWrapper<DamageList> wrapper = new QueryWrapper<>();
+        if(org.springframework.util.StringUtils.hasText(damageListQuery.getStartDate())){
+            wrapper.apply("TRUNC(damage_date) >= TO_DATE({0},'yyyy-MM-dd')",damageListQuery.getStartDate());
+        }
+        if(org.springframework.util.StringUtils.hasText(damageListQuery.getEndDate())){
+            wrapper.apply("TRUNC(damage_date) <= TO_DATE({0},'yyyy-MM-dd')",damageListQuery.getEndDate());
+        }
+        wrapper.orderByDesc("damage_date");
+        // 用IPage接收
+        IPage<DamageList> pageData = baseMapper.selectPage(page, wrapper);
+        List<DamageList> records = pageData.getRecords();
 
+        if(!records.isEmpty()){
+            List<Integer> userIds = records.stream()
+                    .map(DamageList::getUserId)
+                    .collect(Collectors.toList());
+            List<User> userList = userMapper.selectBatchIds(userIds);
+            Map<Integer,String> userMap = userList.stream()
+                    .collect(Collectors.toMap(User::getId,User::getUserName));
+            for(DamageList dl : records){
+                dl.setUserName(userMap.get(dl.getUserId()));
+            }
+        }
+        return PageResultUtil.setResult(pageData.getTotal(), records);
+    }
     @Override
     public void deletedamageList(Integer id) {
         /**

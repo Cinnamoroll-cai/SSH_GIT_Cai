@@ -46,6 +46,8 @@ mybatis-plus:
   typeAliasesPackage : com.edu.seiryo.admin.pojo
   # 配置MyBatis数据返回类型别名（默认别名是类名）
   mapperLocations: classpath:mybatis/mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
 
 #  configLocation: classpath:mybatis/mybatis-config.xml
 

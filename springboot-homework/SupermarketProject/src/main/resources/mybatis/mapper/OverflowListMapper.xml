@@ -16,24 +16,34 @@
         id, overflow_date, overflow_number, remarks, user_id
     </sql>
     <select id="getOverflowNumber" resultType="java.lang.String">
-        select max(overflow_number) as overflowNumber
-        from t_overflow_list
-        where to_days(overflow_date) = to_days(now())
-    </select>
+	    SELECT MAX(overflow_number) AS overflowNumber
+	    FROM t_overflow_list
+	    WHERE TRUNC(overflow_date) = TRUNC(SYSDATE)
+	</select>
+    
+    <!-- 
     <select id="overFlowList" resultType="com.edu.seiryo.admin.pojo.OverflowList">
-        select
-            dl.*,
-            u.user_name as userName
-        from t_overflow_list dl
-        left join t_user u on dl.user_id = u.id
-        <where>
-            <if test="null != overFlowListQuery.startDate and overFlowListQuery.startDate !='' ">
-                and overflow_date &gt;= #{overFlowListQuery.startDate}
-            </if>
-            <if test="null !=overFlowListQuery.endDate and overFlowListQuery.endDate !='' ">
-                and overflow_date &lt;= #{overFlowListQuery.endDate}
-            </if>
-        </where>
-    </select>
-
+	SELECT * FROM (
+	    SELECT TMP.*, ROWNUM ROW_ID
+	    FROM (
+	        select ol.*,u.user_name as userName
+	        from t_overflow_list ol
+	        left join t_user u on ol.user_id = u.id
+	        <where>
+	            <if test="null != overFlowListQuery.startDate and overFlowListQuery.startDate !='' ">
+	                and TRUNC(overflow_date) &gt;= TO_DATE(#{overFlowListQuery.startDate},'yyyy-MM-dd')
+	            </if>
+	            <if test="null !=overFlowListQuery.endDate and overFlowListQuery.endDate !='' ">
+	                and TRUNC(overflow_date) &lt;= TO_DATE(#{overFlowListQuery.endDate},'yyyy-MM-dd')
+	            </if>
+	        </where>
+	        ORDER BY ol.overflow_date DESC
+	    ) TMP
+	    WHERE ROWNUM &lt;= #{page.offset} + #{page.size}
+	)
+	WHERE ROW_ID &gt; #{page.offset}
+	</select>
+    
+     -->
+	
 </mapper>

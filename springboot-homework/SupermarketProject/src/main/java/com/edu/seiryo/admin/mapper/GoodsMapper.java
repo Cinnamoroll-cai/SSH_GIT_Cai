@@ -30,4 +30,12 @@ public interface GoodsMapper extends BaseMapper<Goods> {
     IPage<Goods> stockList(Page<Goods> page, 
                            @Param("goodsName") String goodsName, 
                            @Param("typeId") Integer typeId);
+    
+    /**
+     * 库存预警查询
+     * @param page
+     * @param goodsName
+     * @return
+     */
+    IPage<Goods> alarmListPage(IPage<Goods> page, @Param("goodsName") String goodsName);
 }

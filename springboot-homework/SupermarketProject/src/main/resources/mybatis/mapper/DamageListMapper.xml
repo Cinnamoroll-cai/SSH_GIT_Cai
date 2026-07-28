@@ -15,25 +15,37 @@
     <sql id="Base_Column_List">
         id, damage_date, damage_number, remarks, user_id
     </sql>
-    <select id="getNextDamageNumber" resultType="java.lang.String">
-        select max(damage_number) as damageNumber
-        from t_damage_list
-        where to_days(damage_date) = to_days(now())
-    </select>
-    <select id="damageList" resultType="com.edu.seiryo.admin.pojo.DamageList">
-        select
-           dl.*,
-           u.user_name as userName
-        from t_damage_list dl
-          left join t_user u on dl.user_id = u.id
-         <where>
-             <if test="null != damageListQuery.startDate and damageListQuery.startDate !='' ">
-                 and damage_date &gt;= #{damageListQuery.startDate}
-             </if>
-             <if test="null !=damageListQuery.endDate and damageListQuery.endDate !='' ">
-                 and damage_date &lt;= #{damageListQuery.endDate}
-             </if>
-         </where>
-    </select>
+   <select id="getNextDamageNumber" resultType="java.lang.String">
+	    SELECT MAX(damage_number) AS damageNumber
+	    FROM t_damage_list
+	    WHERE TRUNC(damage_date) = TRUNC(SYSDATE)
+	</select>
+	
+	<!-- 
+	<select id="damageList" resultType="com.edu.seiryo.admin.pojo.DamageList">
+	SELECT * FROM (
+	    SELECT TMP.*, ROWNUM ROW_ID
+	    FROM (
+	        select dl.*,u.user_name as userName
+	        from t_damage_list dl
+	        left join t_user u on dl.user_id = u.id
+	        <where>
+	            <if test="null != damageListQuery.startDate and damageListQuery.startDate !='' ">
+	                and TRUNC(damage_date) &gt;= TO_DATE(#{damageListQuery.startDate},'yyyy-MM-dd')
+	            </if>
+	            <if test="null !=damageListQuery.endDate and damageListQuery.endDate !='' ">
+	                and TRUNC(damage_date) &lt;= TO_DATE(#{damageListQuery.endDate},'yyyy-MM-dd')
+	            </if>
+	        </where>
+	        ORDER BY dl.damage_date DESC
+	    ) TMP
+	    WHERE ROWNUM &lt;= #{page.offset} + #{page.size}
+	)
+	WHERE ROW_ID &gt; #{page.offset}
+	</select>
+	
+	
+	 -->
+    
 
 </mapper>

@@ -1,33 +1,36 @@
-layui.use(['element','laydate','table','layer'],function(){
-       var layer = parent.layer === undefined ? layui.layer : top.layer,
+layui.use(['element','laydate','table','layer','form'],function(){
+    var layer = parent.layer === undefined ? layui.layer : top.layer,
         $ = layui.jquery,
         laydate = layui.laydate,
-        form = layui.form
+        form = layui.form,
         table = layui.table;
 
     laydate.render({
         elem: '#saleDate'
     });
 
+    // DOM加载完毕再加载下拉数据
+    $(function(){
+    	$.ajax({
+    	    type: "post",
+    	    url: ctx + "/customer/allCustomers",
+    	    success: function (data) {
+    	        console.log("客户数据:", data); 
+    	        if (data !== null) {
+    	            $.each(data, function(index, item) {
+    	                $("#customerId").append("<option value='"+item.id+"' >"+item.name+"</option>");
+    	            });
+    	        }
+    	        form.render("select");
+    	    },
+    	    error: function(xhr, status, error) {
+    	        console.log("AJAX错误:", status, error);
+    	    }
+    	});
+    });
 
-    $.ajax({
-        type:"post",
-        url:ctx+"/customer/allCustomers",
-        success:function (data){
-            if (data!== null) {
-                $.each(data, function(index, item) {
-                    $("#customerId").append("<option value='"+item.id+"' >"+item.name+"</option>");
-                });
-            }
-            //重新渲染
-            form.render("select")
-        }
-    })
 
-
-
-
-     var tableIns =table.render({
+    var tableIns =table.render({
         elem: '#saleList',
         height : "full-125",
         toolbar: "#toolbarDemo",
@@ -51,7 +54,6 @@ layui.use(['element','laydate','table','layer'],function(){
             case "add":
                 openGoodsDialog();
                 break;
-
         };
     });
 
@@ -116,73 +118,54 @@ layui.use(['element','laydate','table','layer'],function(){
                     top.layer.close(index);
                     top.layer.msg("操作成功！");
                     layer.closeAll("iframe");
-                    //刷新父页面
                     parent.location.reload();
-                   window.location.href=ctx+"/sale/index";
+                    window.location.href=ctx+"/sale/index";
                 }, 500);
             } else {
-                layer.msg(
-                    res.message, {
-                        icon: 5
-                    }
-                );
+                layer.msg(res.message, {icon: 5});
             }
         });
         return false;
     });
-
-
-
 });
 
 var datas=[];
- function getGoodsSelectInfo(gid,gname,code,price,num,model,unit,typeId,flag){
-     console.log(gid,gname,code,price,num,model,unit,typeId,flag)
-     if(flag){
-         // 添加操作
-         datas.push({
-             "goodsId":gid,
-             "code":code,
-             "name":gname,
-             "price":price,
-             "num":num,
-             "model":model,
-             "unit":unit,
-             "typeId":typeId,
-             "total":price*num
-         });
-     }else{
-         console.log("执行更新...")
-         // 更新操作
-         datas.forEach((item,i) => {
-             if(item.goodsId == gid){
-                 // 修改价格、数量与总金额即可
-                 item.price=price;
-                 item.num=num;
-                 item.total=price*num;
-             }
-         });
-     }
+function getGoodsSelectInfo(gid,gname,code,price,num,model,unit,typeId,flag){
+    console.log(gid,gname,code,price,num,model,unit,typeId,flag)
+    if(flag){
+        datas.push({
+            "goodsId":gid,
+            "code":code,
+            "name":gname,
+            "price":price,
+            "num":num,
+            "model":model,
+            "unit":unit,
+            "typeId":typeId,
+            "total":price*num
+        });
+    }else{
+        console.log("执行更新...")
+        datas.forEach((item,i) => {
+            if(item.goodsId == gid){
+                item.price=price;
+                item.num=num;
+                item.total=price*num;
+            }
+        });
+    }
+    reloadTableData();
+}
 
-     /**
-      * 重载表格数据
-      */
-     reloadTableData();
- }
-
-
- function reloadTableData(){
-     layui.table.reload("saleListTable",{
-         data:datas
-     })
-     var total=0;
-     for (let i = 0; i < datas.length; i++) {
-         total = total + datas[i].total;
-     }
-     layui.jquery("#amountPayable").val(total);
-     layui.jquery("#amountPaid").val(total);
-     // 设置选择商品json数据到隐藏域 便于后续表单提交
-     layui.jquery("input[name='goodsJson']").val(JSON.stringify(datas));
- }
-
-
+function reloadTableData(){
+    layui.table.reload("saleListTable",{
+        data:datas
+    })
+    var total=0;
+    for (let i = 0; i < datas.length; i++) {
+        total = total + datas[i].total;
+    }
+    layui.jquery("#amountPayable").val(total);
+    layui.jquery("#amountPaid").val(total);
+    layui.jquery("input[name='goodsJson']").val(JSON.stringify(datas));
+}

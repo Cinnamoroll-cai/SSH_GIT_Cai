@@ -15,5 +15,27 @@ import java.util.Map;
  * @date 2022/1/19 13:57
  */
 public interface MenuService extends IService<Menu> {
+	/**
+     * 查询所有菜单（用于树形表格）
+     * 前端 menu.js 请求 /menu/list
+     */
+    List<Menu> listAll();
 
+    /**
+     * 保存菜单（新增）
+     * 前端 menu.add.js 提交 /menu/save
+     */
+    void saveMenu(Menu menu);
+
+    /**
+     * 更新菜单
+     * 前端 menu.update.js 提交 /menu/update
+     */
+    void updateMenu(Menu menu);
+
+    /**
+     * 删除菜单（检查是否有子菜单）
+     * 前端 menu.js 请求 /menu/delete
+     */
+    void deleteMenu(Integer id);
 }

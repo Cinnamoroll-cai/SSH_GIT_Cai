@@ -168,8 +168,9 @@ public class CommonController {
     @RequestMapping("listAlarm")
     @ResponseBody
     public Map<String,Object> listAlarm(GoodsQuery goodsQuery){
-        goodsQuery.setType(3);
-        return null;
+    	System.out.println("===进入库存预警接口listAlarm==="); 
+        // 调用service预警查询
+        return goodsService.alarmList(goodsQuery);
     }
 
 

@@ -20,11 +20,10 @@
         id, amount_paid, amount_payable, remarks, sale_date, sale_number, state, user_id, customer_id
     </sql>
     <select id="getNextSaleNumber" resultType="java.lang.String">
-        select max(sale_number) as saleNumber
-        from t_sale_list
-        where to_days(sale_date) = to_days(now())
-    </select>
-
+	    SELECT MAX(sale_number) AS saleNumber
+	    FROM t_sale_list
+	    WHERE TRUNC(sale_date) = TRUNC(SYSDATE)
+	</select>
 
     <select id="saleList" resultType="com.edu.seiryo.admin.pojo.SaleList">
         SELECT

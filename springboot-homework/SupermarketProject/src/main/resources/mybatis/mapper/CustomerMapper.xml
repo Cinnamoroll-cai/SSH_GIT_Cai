@@ -15,7 +15,19 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, address, contact, name, number, remarks, is_del
-    </sql>
-
+    	id, address, contact, name, "NUMBER", remarks, is_del
+	</sql>
+	
+	<select id="queryAllValidCustomer" resultMap="BaseResultMap">
+	    SELECT
+	        id, 
+	        "NUMBER",  <!-- 改成大写 -->
+	        address, 
+	        contact, 
+	        name, 
+	        is_del, 
+	        remarks
+	    FROM t_customer
+	    WHERE is_del = 0
+	</select>
 </mapper>

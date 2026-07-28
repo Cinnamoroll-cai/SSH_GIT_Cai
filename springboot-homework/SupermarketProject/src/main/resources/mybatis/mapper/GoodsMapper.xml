@@ -59,5 +59,59 @@
         </if>
         ORDER BY g.id DESC
     </select>
+    
+    
+	
+	<resultMap id="AlarmResultMap" type="com.edu.seiryo.admin.pojo.Goods">
+	    <id column="id" property="id"/>
+	    <result column="code" property="code"/>
+	    <result column="name" property="name"/>
+	    <result column="model" property="model"/>
+	    <result column="producer" property="producer"/>
+	    <result column="inventory_quantity" property="inventoryQuantity"/>
+	    <result column="purchasing_price" property="purchasingPrice"/>
+	    <result column="last_purchasing_price" property="lastPurchasingPrice"/>
+	    <result column="min_num" property="minNum"/>
+	    <result column="selling_price" property="sellingPrice"/>
+	    <result column="unit" property="unit"/>
+	    <result column="type_id" property="typeId"/>
+	    <result column="state" property="state"/>
+	    <result column="is_del" property="isDel"/>
+	    <result column="typeName" property="typeName"/>
+	    <result column="unitName" property="unitName"/>
+	    <result column="saleTotal" property="saleTotal"/>
+	</resultMap>
+	
+	<!-- 库存报警专用查询 -->
+    <!-- 库存报警专用查询 -->
+<select id="alarmListPage" resultMap="AlarmResultMap">
+    SELECT
+        g.id,
+        g.code,
+        g.name,
+        g.model,
+        g.producer,
+        g.inventory_quantity,
+        g.purchasing_price,
+        g.selling_price,
+        g.last_purchasing_price,
+        g.min_num,
+        g.unit,
+        g.type_id,
+        g.state,
+        g.is_del,
+        gt.name AS typeName,
+        gu.name AS unitName,
+        NVL((SELECT SUM(slg.num) FROM t_sale_list_goods slg WHERE slg.goods_id = g.id),0) AS saleTotal
+    FROM t_goods g
+    LEFT JOIN t_goods_type gt ON g.type_id = gt.id
+    LEFT JOIN t_goods_unit gu ON g.unit = gu.name
+    WHERE g.is_del = 0
+    <if test="goodsName != null and goodsName != ''">
+        AND g.name LIKE '%' || #{goodsName} || '%'
+    </if>
+    AND (g.inventory_quantity &lt; g.min_num OR g.min_num IS NULL)
+    ORDER BY g.id DESC
+</select>
 
 </mapper>

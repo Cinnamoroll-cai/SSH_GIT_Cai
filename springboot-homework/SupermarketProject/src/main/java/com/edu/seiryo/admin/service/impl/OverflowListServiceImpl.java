@@ -7,7 +7,9 @@ import com.edu.seiryo.admin.pojo.DamageList;
 import com.edu.seiryo.admin.pojo.Goods;
 import com.edu.seiryo.admin.pojo.OverflowList;
 import com.edu.seiryo.admin.mapper.OverflowListMapper;
+import com.edu.seiryo.admin.mapper.UserMapper;
 import com.edu.seiryo.admin.pojo.OverflowListGoods;
+import com.edu.seiryo.admin.pojo.User;
 import com.edu.seiryo.admin.query.OverFlowListQuery;
 import com.edu.seiryo.admin.service.GoodsService;
 import com.edu.seiryo.admin.service.OverflowListGoodsService;
@@ -18,6 +20,7 @@ import com.edu.seiryo.admin.utils.DateUtil;
 import com.edu.seiryo.admin.utils.PageResultUtil;
 import com.edu.seiryo.admin.utils.StringUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.annotation.Resource;
@@ -25,6 +28,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author TianTian
@@ -38,6 +43,9 @@ public class OverflowListServiceImpl extends ServiceImpl<OverflowListMapper, Ove
 
     @Resource
     private OverflowListGoodsService overflowListGoodsService;
+    
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public String getOverflowNumber() {
@@ -80,9 +88,34 @@ public class OverflowListServiceImpl extends ServiceImpl<OverflowListMapper, Ove
 
     @Override
     public Map<String, Object> overFlowList(OverFlowListQuery overFlowListQuery) {
-        IPage<OverflowList> page = new Page<OverflowList>(overFlowListQuery.getPage(),overFlowListQuery.getLimit());
-        page =  this.baseMapper.overFlowList(page,overFlowListQuery);
-        return PageResultUtil.setResult(page.getTotal(),page.getRecords());
+        Page<OverflowList> page = new Page<>(overFlowListQuery.getPage(), overFlowListQuery.getLimit());
+        QueryWrapper<OverflowList> wrapper = new QueryWrapper<>();
+
+        if (StringUtils.hasText(overFlowListQuery.getStartDate())) {
+            wrapper.apply("TRUNC(overflow_date) >= TO_DATE({0},'yyyy-MM-dd')", overFlowListQuery.getStartDate());
+        }
+        if (StringUtils.hasText(overFlowListQuery.getEndDate())) {
+            wrapper.apply("TRUNC(overflow_date) <= TO_DATE({0},'yyyy-MM-dd')", overFlowListQuery.getEndDate());
+        }
+        wrapper.orderByDesc("overflow_date");
+
+        IPage<OverflowList> pageData = baseMapper.selectPage(page, wrapper);
+        List<OverflowList> records = pageData.getRecords();
+
+        if (!records.isEmpty()) {
+            List<Integer> userIdList = records.stream()
+                    .map(OverflowList::getUserId)
+                    .collect(Collectors.toList());
+            List<User> userList = userMapper.selectBatchIds(userIdList);
+            Map<Integer, String> userMap = userList.stream()
+                    .collect(Collectors.toMap(User::getId, User::getUserName));
+
+            for (OverflowList overflowList : records) {
+                overflowList.setUserName(userMap.get(overflowList.getUserId()));
+            }
+        }
+
+        return PageResultUtil.setResult(pageData.getTotal(), records);
     }
 
     @Override

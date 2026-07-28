@@ -2,6 +2,7 @@ package com.edu.seiryo.admin.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.edu.seiryo.admin.mapper.CustomerMapper;
 import com.edu.seiryo.admin.model.RespBean;
 import com.edu.seiryo.admin.pojo.Customer;
 import com.edu.seiryo.admin.query.CustomerQuery;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +30,10 @@ public class CustomerController {
 
     @Resource
     private CustomerService customerService;
+    
+    @Resource
+    private CustomerMapper customerMapper;
+
 
     /**
      * 客户管理主页
@@ -93,9 +100,10 @@ public class CustomerController {
         customerService.deleteCustomer(ids);
         return RespBean.success("客户记录删除成功");
     }
+    
     @RequestMapping("allCustomers")
     @ResponseBody
     public List<Customer> allCustomers(){
-        return customerService.list(new QueryWrapper<Customer>().eq("is_del",0));
+        return customerMapper.queryAllValidCustomer();
     }
 }

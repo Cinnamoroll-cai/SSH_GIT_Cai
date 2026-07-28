@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 商品表实现类
@@ -193,6 +194,24 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         boolean deleted = this.updateById(goods);
         AssertUtil.isTrue(!deleted, "商品删除失败");
 	}
+	
+	
+	/**
+	 * 	库存预警
+	 */
+	@Override
+	public Map<String, Object> alarmList(GoodsQuery query) {
+	    Page<Goods> page = new Page<>(query.getPage(), query.getLimit());
+	    IPage<Goods> resultPage = goodsMapper.alarmListPage(page, query.getGoodsName());
+	    List<Goods> goodsList = resultPage.getRecords();
 
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("code", 0);
+	    result.put("msg", "");
+	    result.put("count", resultPage.getTotal());
+	    result.put("data", goodsList);
+	    return result;
+	}
 
+	
 }
